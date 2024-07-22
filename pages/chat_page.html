@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ws = new WebSocket("ws://localhost:9090/ws");
+
+            ws.onmessage = function (event) {
+                const msg = JSON.parse(event.data);
+                const chatBox = document.getElementById("chat-box");
+                
+                const msgContainer = document.createElement("div");
+                msgContainer.className = "flex flex-col justify-start ml-4 mb-4 max-w-3/4";
+                
+                const sender = document.createElement("div");
+                sender.className = "py-2 text-sm";
+                sender.innerText = "Tapas";
+                
+                const modelMsg = document.createElement("div");
+                modelMsg.innerText = msg.message;
+                modelMsg.className = "ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-bl-xl rounded-tr-3xl rounded-tl-xl text-white";
+
+                msgContainer.appendChild(sender);
+                msgContainer.appendChild(modelMsg);
+                chatBox.appendChild(msgContainer);
+            };
+
+            document.getElementById("send").onclick = function () {
+                const input = document.getElementById("message");
+                const fileInput = document.getElementById("fileInput");
+
+                const msg = input.value;
+                const file = fileInput.files[0];
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const fileContent = e.target.result;
+                        const message = {
+                            text: msg,
+                            file: fileContent
+                        };
+                        ws.send(JSON.stringify(message));
+
+                        const chatBox = document.getElementById("chat-box");
+
+                        const msgContainer = document.createElement("div");
+                        msgContainer.className = "flex justify-end self-end mr-4 mb-4 max-w-3/4";
+                        
+                        const msgAttribute = document.createElement("div");
+                        msgAttribute.className = "flex flex-col";
+                        
+                        const sender = document.createElement("div");
+                        sender.className = "py-2 pr- text-sm flex justify-end";
+                        sender.innerText = "You";
+                        
+                        const userMsg = document.createElement("div");
+                        userMsg.innerText = msg;
+                        userMsg.className = "mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-br-xl rounded-tl-3xl rounded-tr-xl text-white";
+
+                        msgAttribute.appendChild(sender);
+                        msgAttribute.appendChild(userMsg);
+                        msgContainer.appendChild(msgAttribute);
+                        chatBox.appendChild(msgContainer);
+
+                        input.value = "";
+                        fileInput.value = "";
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    const message = {
+                        text: msg
+                    };
+                    ws.send(JSON.stringify(message));
+
+                    const chatBox = document.getElementById("chat-box");
+                    
+                    const msgContainer = document.createElement("div");
+                    msgContainer.className = "flex justify-end self-end mr-4 mb-4 max-w-3/4";
+                    
+                    const msgAttribute = document.createElement("div");
+                    msgAttribute.className = "flex flex-col";
+                    
+                    const sender = document.createElement("div");
+                    sender.className = "py-2 pr- text-sm flex justify-end";
+                    sender.innerText = "You";
+                    
+                    const userMsg = document.createElement("div");
+                    userMsg.innerText = msg;
+                    userMsg.className = "mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-br-xl rounded-tl-3xl rounded-tr-xl text-white";
+
+                    msgAttribute.appendChild(sender);
+                    msgAttribute.appendChild(userMsg);
+                    msgContainer.appendChild(msgAttribute);
+                    chatBox.appendChild(msgContainer);
+
+                    input.value = "";
+                }
+            };
+        });
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    maxWidth: {
+                        '1/4': '25%',
+                        '1/2': '50%',
+                        '3/4': '75%',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function showFileName() {
+            var fileInput = document.getElementById('fileInput');
+            var filename = document.getElementById('filename');
+            filename.innerText = fileInput.files.item(0).name;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="w-full h-screen flex flex-col justify-between">
+        <div id="chat-box" class="flex flex-col mt-5" style="overflow-y:auto; max-height: 83%; height: 83%;">
+            
+        </div>
+        <div class="flex w-screen items-center gap-4 px-4 fixed bottom-0 left-0">
+            <label for="fileInput" class="flex flex-col items-center gap-2 cursor-pointer" style="width: 10%;">
+                <img src="https://cdn-icons-png.flaticon.com/512/876/876210.png" style="width:30%; min-width: 18px; max-width: 23px;" alt="">
+                <p id="filename" class="text-gray-600 text-xs"></p>
+            </label>
+            <input id="fileInput" accept=".csv" type="file" class="hidden" onchange="showFileName()" />
+            <div class="py-5 w-5/6 flex-auto">
+                <input id="message" class="w-full bg-gray-300 py-3.5 px-3 rounded-xl" type="text"
+                    placeholder="type your message here..." />
+            </div>
+            <button id="send" type="button"
+                class="max-w-fit items-center rounded-md bg-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-blue-600 hover:bg-blue-700">Send</button>
+        </div>
+    </div>
+</body>
+
+</html>
